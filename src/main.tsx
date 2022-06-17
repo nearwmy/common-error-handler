@@ -1,4 +1,5 @@
 import defaultCodes from './codes';
+import RequestError from './error'
 
 interface errorHandlerConfig {
   condition: (args: any) => boolean;
@@ -60,5 +61,5 @@ const doAllHandlers = (code: string, ...args: any) => {
   }
 };
 
-export { defaultCodes, errorHandler, doAllHandlers };
+export { defaultCodes, errorHandler, doAllHandlers, RequestError };
 export default ErrorHandler;

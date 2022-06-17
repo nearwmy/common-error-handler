@@ -1,65 +1,105 @@
-import defaultCodes from './codes';
+import errorCodes from './codes';
 import RequestError from './error'
+import { ErrorHandlerConfig, Handlers, Handler, Condition } from "./types";
 
-interface errorHandlerConfig {
-  condition: (args: any) => boolean;
-  handler: (args: any) => void;
-}
+const symbolId = Symbol()
+let errorHandlerIns:ErrorHandler | null = null;
 
-interface handlersParmas {
-  [index: string]: errorHandlerConfig;
-}
-
+const finalHandler: Handler = (error: Error) => {
+  if (error instanceof Error) {
+    throw Error;
+  }
+  return error;
+};
 class ErrorHandler {
-  static defaultCodes = defaultCodes
-  static errorCodes = {};
+  private configHandlers: Map<string, ErrorHandlerConfig>;
+  private finalHandler: Handler = finalHandler;
 
-  static init(errorCodes: any) {
-    ErrorHandler.errorCodes = errorCodes;
+  constructor(id: Symbol) {
+    if (id !== symbolId) {
+      throw new Error("can not create a ErrorHandler instance");
+    }
+    this.configHandlers = new Map();
   }
 
-  public handlers: Map<string, (args:any) => void> = new Map();
+  static getInstance() {
+    if (errorHandlerIns === null) {
+      errorHandlerIns = new ErrorHandler(symbolId);
+    }
+    return errorHandlerIns;
+  }
 
-  public assert: Map<string, (args:any) => boolean> = new Map();
-
-  public registerHandlers(handlers: handlersParmas) {
+  // 注册错误处理
+  registerHandlers(handlers: Handlers) {
     const keys = Object.keys(handlers);
     for (let i = 0; i < keys.length; i++) {
-      this.registerHandler(keys[i], handlers[keys[i]]);
+      this.configHandlers.set(keys[i], handlers[keys[i]]);
     }
   }
 
-  private registerHandler(key: string, config: errorHandlerConfig) {
-    if (!config.condition || !config.handler)
-      throw new Error(
-        "[register errorHandler failed]: condition and handler are required parameters"
-      );
-    this.handlers.set(key, config.handler);
-    this.addAssert(key, config.condition);
+  // 注册兜底错误处理
+  registerFinalHandler(handler: Handler): void {
+    this.finalHandler = handler;
   }
 
-  private addAssert(key: string, condition: any) {
-    this.assert.set(key, condition);
+  // 卸载错误处理
+  unregisterHandlers(handlerKeys: string[]) {
+    for (let i = 0; i++; i < handlerKeys.length) {
+      this.configHandlers.delete(handlerKeys[i]);
+    }
   }
-}
 
-const errorHandler = new ErrorHandler();
+  // 卸载兜底错误处理
+  unregisterFinalHandler() {
+    this.finalHandler = finalHandler;
+  }
 
-const doAllHandlers = (code: string, ...args: any) => {
-  const errors = Array.from(errorHandler.assert.keys());
-  for (let i = 0; i < errors.length; i++) {
-    const key = errors[i];
-    const hasAssert= errorHandler.assert.has(key);
-    const hasHandler = errorHandler.handlers.has(key);
+  getConfigHandlers() {
+    return this.configHandlers;
+  }
 
-    if (hasAssert && hasHandler && errorHandler.assert.get(key)) {
-      const handler = errorHandler.handlers.get(key);
-      if (handler) {
-        handler([...args])
+  getFinalHandler() {
+    return this.finalHandler;
+  }
+
+  // 处理错误
+  handler(error: Error) {
+    if (error !== undefined && error !== null) {
+      const finalHandler = (error: Error | unknown) => {
+        try {
+          if (this.finalHandler) {
+            this.finalHandler(error);
+          }
+        } catch (anotherError) {
+          console.warn(
+            "occur an error in finalHandler handler\n",
+            anotherError
+          );
+        }
+      };
+
+      // 如果未被处理则进入兜底处理
+      let handled = false;
+      const configHandlersArr = Array.from(this.configHandlers);
+      configHandlersArr.forEach((item: any) => {
+        const config = item[1];
+        try {
+          if (config.condition(error)) {
+            config.handler(error);
+          }
+        } catch (anotherError) {
+          finalHandler(anotherError);
+        }
+
+        handled = true;
+      });
+
+      if (!handled) {
+        finalHandler(error);
       }
     }
   }
-};
+}
 
-export { defaultCodes, errorHandler, doAllHandlers, RequestError };
+export { errorCodes, RequestError };
 export default ErrorHandler;

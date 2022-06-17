@@ -1,17 +1,25 @@
 import { describe, assert, expect, test } from 'vitest'
-import ErrorHandler, { errorHandler, defaultCodes } from '../src/main'
+import ErrorHandler, { errorCodes, RequestError } from '../src/main'
 import handlers from './handler';
 
-const errorHandlerIns = new ErrorHandler();
+const errorHandlerIns = ErrorHandler.getInstance();
+class BussinessError extends Error {
+  code: string = ''
+  
+  constructor(code: string) {
+    super();
+    this.code = code;
+  }
+}
 
 describe('module exports test', () => {
 
-  test('errorhandler is defined', () => {
-    expect(errorHandler).toBeDefined();
+  test('errorCodes is defined', () => {
+    expect(errorCodes).toBeDefined();
   })
 
-  test('defaultCodes is defined', () => {
-    expect(defaultCodes).toBeDefined();
+  test('RequestError is defined', () => {
+    expect(RequestError).toBeDefined();
   })
 
   test('errorHandlerIns are instanceof ErrorHandler', () => {
@@ -20,22 +28,18 @@ describe('module exports test', () => {
 
 })
 
-describe('errorHandler register test', () => {
+describe('errorHandlerIns register test', () => {
   
   test('registerHandler', () => {
-    errorHandler.registerHandlers(handlers);
-    expect(errorHandler.assert).toBeInstanceOf(Map)
-    expect(errorHandler.handlers).toBeInstanceOf(Map)
+    errorHandlerIns.registerHandlers(handlers);
+    expect(errorHandlerIns.getConfigHandlers()).toBeInstanceOf(Map)
   })
 
-  test('assert callback is boolean', () => {
-    const res = errorHandler.assert.get('isNetworkError')(defaultCodes.NETWORK_ERROR);
-    expect(res).toEqual(true)
-  })
 
   test('handler throw error', () => {
-    const handler = errorHandler.handlers.get('isNetworkError');
-    expect(() => handler(defaultCodes.NETWORK_ERROR)).toThrowError();
+    const networkError = new BussinessError(errorCodes.NETWORK_ERROR)
+    const handler = errorHandlerIns.handler;
+    expect(() => handler(networkError)).toThrowError();
   })
 
 })

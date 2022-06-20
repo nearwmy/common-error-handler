@@ -65,7 +65,7 @@ class ErrorHandler {
   // 处理错误
   handler(error: Error) {
     if (error !== undefined && error !== null) {
-      const finalHandler = (error: Error | unknown) => {
+      const finalHandler = (error: Error) => {
         try {
           if (this.finalHandler) {
             this.finalHandler(error);
@@ -87,7 +87,7 @@ class ErrorHandler {
           if (config.condition(error)) {
             config.handler(error);
           }
-        } catch (anotherError) {
+        } catch (anotherError: any) {
           finalHandler(anotherError);
         }
 

@@ -1,7 +1,10 @@
 {
-  "name": "error-handler",
+  "name": "@yxbj/error-handler",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "index": "src/main.tsx",
+  "main": "dist/lib.umd.js",
+  "browser": "dist/lib.es.js",
   "scripts": {
     "dev": "vite",
     "test": "vitest -w",

@@ -1,6 +1,6 @@
 import EdamError from './EdamError'
-import GrpcError from './GRPCError'
-import RestfulError from './RestFulError'
+import GrpcError from './GrpcError'
+import RestfulError from './RestfulError'
 
 
 export default {

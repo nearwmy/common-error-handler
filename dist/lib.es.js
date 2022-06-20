@@ -42,47 +42,96 @@ const GRPC_CODES = {
   REACHED_LIMIT: 11007,
   FORMAT_ERROR: 22222
 };
-var defaultCodes = __spreadValues(__spreadValues(__spreadValues({}, COMMON_CODES), EDAM_CODES), GRPC_CODES);
-const _ErrorHandler = class {
-  constructor() {
-    __publicField(this, "handlers", /* @__PURE__ */ new Map());
-    __publicField(this, "assert", /* @__PURE__ */ new Map());
+var codes = __spreadValues(__spreadValues(__spreadValues({}, COMMON_CODES), EDAM_CODES), GRPC_CODES);
+class EdamError extends Error {
+}
+__publicField(EdamError, "type", "edam");
+__publicField(EdamError, "code", "");
+class GrpcError extends Error {
+}
+__publicField(GrpcError, "type", "grpc");
+class RestfulError extends Error {
+}
+__publicField(RestfulError, "type", "restful");
+var index = {
+  EdamError,
+  GrpcError,
+  RestfulError
+};
+const symbolId = Symbol();
+let errorHandlerIns = null;
+const finalHandler = (error) => {
+  if (error instanceof Error) {
+    throw Error;
   }
-  static init(errorCodes) {
-    _ErrorHandler.errorCodes = errorCodes;
+  return error;
+};
+class ErrorHandler {
+  constructor(id) {
+    __publicField(this, "configHandlers");
+    __publicField(this, "finalHandler", finalHandler);
+    if (id !== symbolId) {
+      throw new Error("can not create a ErrorHandler instance");
+    }
+    this.configHandlers = /* @__PURE__ */ new Map();
+  }
+  static getInstance() {
+    if (errorHandlerIns === null) {
+      errorHandlerIns = new ErrorHandler(symbolId);
+    }
+    return errorHandlerIns;
   }
   registerHandlers(handlers) {
     const keys = Object.keys(handlers);
     for (let i = 0; i < keys.length; i++) {
-      this.registerHandler(keys[i], handlers[keys[i]]);
+      this.configHandlers.set(keys[i], handlers[keys[i]]);
     }
   }
-  registerHandler(key, config) {
-    if (!config.condition || !config.handler)
-      throw new Error("[register errorHandler failed]: condition and handler are required parameters");
-    this.handlers.set(key, config.handler);
-    this.addAssert(key, config.condition);
+  registerFinalHandler(handler) {
+    this.finalHandler = handler;
   }
-  addAssert(key, condition) {
-    this.assert.set(key, condition);
+  unregisterHandlers(handlerKeys) {
+    for (let i = 0; i++; i < handlerKeys.length) {
+      this.configHandlers.delete(handlerKeys[i]);
+    }
   }
-};
-let ErrorHandler = _ErrorHandler;
-__publicField(ErrorHandler, "defaultCodes", defaultCodes);
-__publicField(ErrorHandler, "errorCodes", {});
-const errorHandler = new ErrorHandler();
-const doAllHandlers = (code, ...args) => {
-  const errors = Array.from(errorHandler.assert.keys());
-  for (let i = 0; i < errors.length; i++) {
-    const key = errors[i];
-    const hasAssert = errorHandler.assert.has(key);
-    const hasHandler = errorHandler.handlers.has(key);
-    if (hasAssert && hasHandler && errorHandler.assert.get(key)) {
-      const handler = errorHandler.handlers.get(key);
-      if (handler) {
-        handler([...args]);
+  unregisterFinalHandler() {
+    this.finalHandler = finalHandler;
+  }
+  getConfigHandlers() {
+    return this.configHandlers;
+  }
+  getFinalHandler() {
+    return this.finalHandler;
+  }
+  handler(error) {
+    if (error !== void 0 && error !== null) {
+      const finalHandler2 = (error2) => {
+        try {
+          if (this.finalHandler) {
+            this.finalHandler(error2);
+          }
+        } catch (anotherError) {
+          console.warn("occur an error in finalHandler handler\n", anotherError);
+        }
+      };
+      let handled = false;
+      const configHandlersArr = Array.from(this.configHandlers);
+      configHandlersArr.forEach((item) => {
+        const config = item[1];
+        try {
+          if (config.condition(error)) {
+            config.handler(error);
+          }
+        } catch (anotherError) {
+          finalHandler2(anotherError);
+        }
+        handled = true;
+      });
+      if (!handled) {
+        finalHandler2(error);
       }
     }
   }
-};
-export { ErrorHandler as default, defaultCodes, doAllHandlers, errorHandler };
+}
+export { index as RequestError, ErrorHandler as default, codes as errorCodes };

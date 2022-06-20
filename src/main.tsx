@@ -5,7 +5,7 @@ import { ErrorHandlerConfig, Handlers, Handler, Condition } from "./types";
 const symbolId = Symbol()
 let errorHandlerIns:ErrorHandler | null = null;
 
-const finalHandler: Handler = (error: Error) => {
+const defaultFinalHandler: Handler = (error: Error) => {
   if (error instanceof Error) {
     throw Error;
   }
@@ -13,7 +13,7 @@ const finalHandler: Handler = (error: Error) => {
 };
 class ErrorHandler {
   private configHandlers: Map<string, ErrorHandlerConfig>;
-  private finalHandler: Handler = finalHandler;
+  private finalHandler: Handler = defaultFinalHandler;
 
   constructor(id: Symbol) {
     if (id !== symbolId) {
@@ -51,7 +51,7 @@ class ErrorHandler {
 
   // 卸载兜底错误处理
   unregisterFinalHandler() {
-    this.finalHandler = finalHandler;
+    this.finalHandler = defaultFinalHandler;
   }
 
   getConfigHandlers() {
@@ -67,7 +67,7 @@ class ErrorHandler {
     if (error !== undefined && error !== null) {
       const finalHandler = (error: Error) => {
         try {
-          if (this.finalHandler) {
+          if (this.finalHandler instanceof Function) {
             this.finalHandler(error);
           }
         } catch (anotherError) {

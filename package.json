@@ -2,8 +2,7 @@
   "name": "@yxbj/error-handler",
   "private": true,
   "version": "0.0.1",
-  "index": "src/main.tsx",
-  "main": "dist/lib.umd.js",
+  "main": "dist/lib.es.js",
   "browser": "dist/lib.es.js",
   "scripts": {
     "dev": "vite",

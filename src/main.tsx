@@ -88,26 +88,27 @@ class ErrorHandler {
       const configHandlersArr = Array.from(this.configHandlers);
       configHandlersArr.forEach((item: any) => {
         const config = item[1];
-        let bubble = true;
-        const event = {
-          stopPropagation() {
-            bubble = false;
-          }
-        };
-        try {
-          if (config.condition(error)) {
+        if (config.condition(error)) {
+          let bubble = true;
+          const event = {
+            stopPropagation() {
+              bubble = false;
+            },
+          };
+          try {
             config.handler(error, event);
+          } catch (anotherError: any) {
+            finalHandler(anotherError);
           }
-        } catch (anotherError: any) {
-          finalHandler(anotherError);
-        }
 
-        handled = true;
-        if (bubble) {
-          needBubble++;
+          handled = true;
+          if (bubble) {
+            needBubble++;
+          }
         }
       });
-
+      console.log("needBubble====", needBubble);
+      console.log('handled=====', handled);
       if (!handled || needBubble > 0) {
         finalHandler(error);
       }

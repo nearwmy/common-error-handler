@@ -39,7 +39,11 @@ class ErrorHandler {
 
   // 注册兜底错误处理
   registerFinalHandler(handler: Handler): void {
-    this.finalHandler = handler;
+    if (typeof handler === 'function') {
+      this.finalHandler = handler;
+    } else {
+      throw new Error('final handler must be function')
+    }
   }
 
   // 卸载错误处理
@@ -67,7 +71,7 @@ class ErrorHandler {
     if (error !== undefined && error !== null) {
       const finalHandler = (error: Error) => {
         try {
-          if (this.finalHandler instanceof Function) {
+          if (typeof this.finalHandler === 'function') {
             this.finalHandler(error);
           }
         } catch (anotherError) {
@@ -80,21 +84,31 @@ class ErrorHandler {
 
       // 如果未被处理则进入兜底处理
       let handled = false;
+      let needBubble = 0;
       const configHandlersArr = Array.from(this.configHandlers);
       configHandlersArr.forEach((item: any) => {
         const config = item[1];
+        let bubble = true;
+        const event = {
+          stopPropagation() {
+            bubble = false;
+          }
+        };
         try {
           if (config.condition(error)) {
-            config.handler(error);
+            config.handler(error, event);
           }
         } catch (anotherError: any) {
           finalHandler(anotherError);
         }
 
         handled = true;
+        if (bubble) {
+          needBubble++;
+        }
       });
 
-      if (!handled) {
+      if (!handled || needBubble > 0) {
         finalHandler(error);
       }
     }

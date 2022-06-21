@@ -1,4 +1,4 @@
-export type Handler = (error: Error) => void
+export type Handler = (error: Error, event?: any) => void
 export type Condition = (error: Error) => boolean
 
 export interface ErrorHandlerConfig {

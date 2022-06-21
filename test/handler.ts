@@ -32,7 +32,8 @@ const handlers = {
     },
     isUnknowError: {
         condition: error => Object.values(errorCodes).indexOf(error.code) === -1,
-        handler: error => {
+        handler: (error, event) => {
+            event.stopPropagation();
             throw new Error('未知错误')
         }
     }

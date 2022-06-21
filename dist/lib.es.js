@@ -60,7 +60,7 @@ var index = {
 };
 const symbolId = Symbol();
 let errorHandlerIns = null;
-const finalHandler = (error) => {
+const defaultFinalHandler = (error) => {
   if (error instanceof Error) {
     throw Error;
   }
@@ -69,7 +69,7 @@ const finalHandler = (error) => {
 class ErrorHandler {
   constructor(id) {
     __publicField(this, "configHandlers");
-    __publicField(this, "finalHandler", finalHandler);
+    __publicField(this, "finalHandler", defaultFinalHandler);
     if (id !== symbolId) {
       throw new Error("can not create a ErrorHandler instance");
     }
@@ -88,7 +88,11 @@ class ErrorHandler {
     }
   }
   registerFinalHandler(handler) {
-    this.finalHandler = handler;
+    if (typeof handler === "function") {
+      this.finalHandler = handler;
+    } else {
+      throw new Error("final handler must be function");
+    }
   }
   unregisterHandlers(handlerKeys) {
     for (let i = 0; i++; i < handlerKeys.length) {
@@ -96,7 +100,7 @@ class ErrorHandler {
     }
   }
   unregisterFinalHandler() {
-    this.finalHandler = finalHandler;
+    this.finalHandler = defaultFinalHandler;
   }
   getConfigHandlers() {
     return this.configHandlers;
@@ -106,9 +110,9 @@ class ErrorHandler {
   }
   handler(error) {
     if (error !== void 0 && error !== null) {
-      const finalHandler2 = (error2) => {
+      const finalHandler = (error2) => {
         try {
-          if (this.finalHandler) {
+          if (typeof this.finalHandler === "function") {
             this.finalHandler(error2);
           }
         } catch (anotherError) {
@@ -116,20 +120,30 @@ class ErrorHandler {
         }
       };
       let handled = false;
+      let needBubble = 0;
       const configHandlersArr = Array.from(this.configHandlers);
       configHandlersArr.forEach((item) => {
         const config = item[1];
+        let bubble = true;
+        const event = {
+          stopPropagation() {
+            bubble = false;
+          }
+        };
         try {
           if (config.condition(error)) {
-            config.handler(error);
+            config.handler(error, event);
           }
         } catch (anotherError) {
-          finalHandler2(anotherError);
+          finalHandler(anotherError);
         }
         handled = true;
+        if (bubble) {
+          needBubble++;
+        }
       });
-      if (!handled) {
-        finalHandler2(error);
+      if (!handled || needBubble > 0) {
+        finalHandler(error);
       }
     }
   }

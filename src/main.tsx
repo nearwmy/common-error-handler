@@ -1,6 +1,12 @@
-import errorCodes from './codes';
+import errorCodes, { GRPC_CODES, EDAM_CODES } from "./codes";
 import RequestError from './error'
-import { ErrorHandlerConfig, Handlers, Handler, Condition } from "./types";
+import {
+  ErrorHandlerConfig,
+  Handlers,
+  Handler,
+  Condition,
+  ErrorHandlerInterface,
+} from "./types";
 
 const symbolId = Symbol()
 let errorHandlerIns:ErrorHandler | null = null;
@@ -11,16 +17,17 @@ const defaultFinalHandler: Handler = (error: Error) => {
   }
   return error;
 };
-class ErrorHandler {
+class ErrorHandler implements ErrorHandlerInterface {
   private configHandlers: Map<string, ErrorHandlerConfig>;
   private finalHandler: Handler = defaultFinalHandler;
 
   constructor(id: Symbol) {
     if (id !== symbolId) {
-      throw new Error("can not create a ErrorHandler instance");
+      throw new Error("ERROR_HANDLER: can not create a ErrorHandler instance");
     }
     this.configHandlers = new Map();
   }
+
 
   static getInstance() {
     if (errorHandlerIns === null) {
@@ -38,11 +45,11 @@ class ErrorHandler {
   }
 
   // 注册兜底错误处理
-  registerFinalHandler(handler: Handler): void {
+  registerFinalHandler(handler: Handler) {
     if (typeof handler === 'function') {
       this.finalHandler = handler;
     } else {
-      throw new Error('final handler must be function')
+      throw new Error("ERROR_HANDLER: final handler must be function");
     }
   }
 
@@ -64,6 +71,18 @@ class ErrorHandler {
 
   getFinalHandler() {
     return this.finalHandler;
+  }
+
+  // 断言 根据 error 判断错误
+  assert(key: string, error: any): boolean {
+    const config = this.configHandlers.get(key);
+    if (config) {
+      const { condition } = config;
+      return condition(error);
+    } else {
+      console.warn(`ERROR_HANDLER: ${key} is not found in configHandlers`);
+      return false;
+    }
   }
 
   // 处理错误
@@ -116,5 +135,5 @@ class ErrorHandler {
   }
 }
 
-export { errorCodes, RequestError };
+export { errorCodes, GRPC_CODES, EDAM_CODES, RequestError };
 export default ErrorHandler;

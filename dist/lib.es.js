@@ -48,6 +48,13 @@ class EdamError extends Error {
 __publicField(EdamError, "type", "edam");
 __publicField(EdamError, "code", "");
 class GrpcError extends Error {
+  constructor(obj) {
+    super();
+    __publicField(this, "code", "");
+    __publicField(this, "message", "");
+    this.code = obj.code;
+    this.message = obj.message;
+  }
 }
 __publicField(GrpcError, "type", "grpc");
 class RestfulError extends Error {
@@ -71,7 +78,7 @@ class ErrorHandler {
     __publicField(this, "configHandlers");
     __publicField(this, "finalHandler", defaultFinalHandler);
     if (id !== symbolId) {
-      throw new Error("can not create a ErrorHandler instance");
+      throw new Error("ERROR_HANDLER: can not create a ErrorHandler instance");
     }
     this.configHandlers = /* @__PURE__ */ new Map();
   }
@@ -91,7 +98,7 @@ class ErrorHandler {
     if (typeof handler === "function") {
       this.finalHandler = handler;
     } else {
-      throw new Error("final handler must be function");
+      throw new Error("ERROR_HANDLER: final handler must be function");
     }
   }
   unregisterHandlers(handlerKeys) {
@@ -107,6 +114,18 @@ class ErrorHandler {
   }
   getFinalHandler() {
     return this.finalHandler;
+  }
+  assert(key, error) {
+    const config = this.configHandlers.get(key);
+    if (config) {
+      const {
+        condition
+      } = config;
+      return condition(error);
+    } else {
+      console.warn(`ERROR_HANDLER: ${key} is not found in configHandlers`);
+      return false;
+    }
   }
   handler(error) {
     if (error !== void 0 && error !== null) {
@@ -150,4 +169,4 @@ class ErrorHandler {
     }
   }
 }
-export { index as RequestError, ErrorHandler as default, codes as errorCodes };
+export { EDAM_CODES, GRPC_CODES, index as RequestError, ErrorHandler as default, codes as errorCodes };

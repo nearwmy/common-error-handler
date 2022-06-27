@@ -126,8 +126,6 @@ class ErrorHandler implements ErrorHandlerInterface {
           }
         }
       });
-      console.log("needBubble====", needBubble);
-      console.log('handled=====', handled);
       if (!handled || needBubble > 0) {
         finalHandler(error);
       }

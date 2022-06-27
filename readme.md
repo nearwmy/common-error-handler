@@ -18,22 +18,24 @@ yarn dev
 
 ### 测试
 
-yarn test 
+yarn test:run 
 yarn test:ui
 
 
-### handlers 示例
+### 注册的 handlers 示例
 
 ```
+import ErrorHandler from 'error-handler';
+const { COMMON_CODES, EDAM_CODES, GRPC_CODES } = errorCodes;
 const handlers = {
     isNetworkError: {
-        condition: code => code === errorCodes.NETWORK_ERROR,
+        condition: code => code === COMMON_CODES.NETWORK_ERROR,
         handler: error => {
           throw new Error('网络错误，请稍后重试')
         }
     },
     isTimeout: {
-        condition: code => code === errorCodes.TIMEOUT_ABORTED,
+        condition: code => code === COMMON_CODES.TIMEOUT_ABORTED,
         handler:error => {
           throw new Error('请求已超时，请重新尝试')
         }
@@ -43,14 +45,16 @@ const handlers = {
         handler: () => {
             throw new Error('请检查网络设置')
         }
-    },
-    isUnknowError: {
-        condition: code => Object.values(errorCodes).indexOf(code) === -1,
-        handler: error => {
-            throw new Error('未知错误')
-        }
     }
 };
+// 初始化
+const errorHandler = ErrorHandler.getInstance();
+// 注册错误处理
+errorHandler.registerHandlers(yxHandlers);
+// 注册兜底错误处理
+errorHandler.registerFinalHandler((error: any) => {
+    console.log('unhandled error:', error);
+});
 
 ```
 

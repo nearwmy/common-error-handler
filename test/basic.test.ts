@@ -3,14 +3,6 @@ import ErrorHandler, { errorCodes, RequestError } from '../src/main'
 import handlers from './handler';
 
 const errorHandlerIns = ErrorHandler.getInstance();
-class BussinessError extends Error {
-  code: string = ''
-  
-  constructor(code: string) {
-    super();
-    this.code = code;
-  }
-}
 
 describe('module exports test', () => {
 
@@ -37,7 +29,7 @@ describe('errorHandlerIns register test', () => {
 
 
   test('handler throw error', () => {
-    const networkError = new BussinessError(errorCodes.NETWORK_ERROR)
+    const networkError = new RequestError.RestfulError({code: errorCodes.COMMON_CODES.NETWORK_ERROR, message: '网络错误，请稍后重试'})
     const handler = errorHandlerIns.handler;
     expect(() => handler(networkError)).toThrowError();
   })

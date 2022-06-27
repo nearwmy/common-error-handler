@@ -1,19 +1,5 @@
 var __defProp = Object.defineProperty;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp(a, prop, b[prop]);
-    }
-  return a;
-};
 var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
@@ -42,11 +28,21 @@ const GRPC_CODES = {
   REACHED_LIMIT: 11007,
   FORMAT_ERROR: 22222
 };
-var codes = __spreadValues(__spreadValues(__spreadValues({}, COMMON_CODES), EDAM_CODES), GRPC_CODES);
+var codes = {
+  COMMON_CODES,
+  EDAM_CODES,
+  GRPC_CODES
+};
 class EdamError extends Error {
+  constructor(obj) {
+    super();
+    __publicField(this, "code", "");
+    __publicField(this, "message", "");
+    this.code = obj.code;
+    this.message = obj.message;
+  }
 }
 __publicField(EdamError, "type", "edam");
-__publicField(EdamError, "code", "");
 class GrpcError extends Error {
   constructor(obj) {
     super();
@@ -58,6 +54,13 @@ class GrpcError extends Error {
 }
 __publicField(GrpcError, "type", "grpc");
 class RestfulError extends Error {
+  constructor(obj) {
+    super();
+    __publicField(this, "code", "");
+    __publicField(this, "message", "");
+    this.code = obj.code;
+    this.message = obj.message;
+  }
 }
 __publicField(RestfulError, "type", "restful");
 var index = {
@@ -169,4 +172,4 @@ class ErrorHandler {
     }
   }
 }
-export { EDAM_CODES, GRPC_CODES, index as RequestError, ErrorHandler as default, codes as errorCodes };
+export { index as RequestError, ErrorHandler as default, codes as errorCodes };

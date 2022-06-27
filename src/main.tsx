@@ -1,4 +1,4 @@
-import errorCodes, { GRPC_CODES, EDAM_CODES } from "./codes";
+import errorCodes from "./codes";
 import RequestError from './error'
 import {
   ErrorHandlerConfig,
@@ -135,5 +135,5 @@ class ErrorHandler implements ErrorHandlerInterface {
   }
 }
 
-export { errorCodes, GRPC_CODES, EDAM_CODES, RequestError };
+export { errorCodes, RequestError };
 export default ErrorHandler;

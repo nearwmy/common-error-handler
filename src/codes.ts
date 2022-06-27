@@ -1,3 +1,5 @@
+import { EDAM_ERROR_CODES } from './types';
+
 const COMMON_CODES = {
     NETWORK_ERROR: 'Network Error',
     TIMEOUT_ABORTED: 'ECONNABORTED',
@@ -5,7 +7,7 @@ const COMMON_CODES = {
     INVALID_TOKEN_CODE: 413
 };
 
-const EDAM_CODES = {
+const EDAM_CODES: EDAM_ERROR_CODES = {
     PERMISSION_DENIED: 3,
     INVALID_AUTH: 8,
     AUTH_EXPIRED: 9
@@ -25,14 +27,9 @@ const GRPC_CODES = {
     FORMAT_ERROR: 22222
 };
 
-export {
+export default {
     // eslint-disable-next-line import/prefer-default-export
     COMMON_CODES,
     EDAM_CODES,
     GRPC_CODES
-};
-export default {
-    ...COMMON_CODES,
-    ...EDAM_CODES,
-    ...GRPC_CODES
 };

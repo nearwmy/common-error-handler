@@ -26,3 +26,9 @@ export interface ErrorHandlerInterface {
   assert: (key: string, error: any) => boolean;
   handler: (error: any) => void;
 }
+
+export type EDAM_ERROR_CODES = {
+  PERMISSION_DENIED:3;
+  INVALID_AUTH: 8;
+  AUTH_EXPIRED: 9;
+}

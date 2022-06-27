@@ -12,7 +12,7 @@ export interface Handlers {
 
 
 export interface RequestError {
-  code: string;
+  code: string|number;
   message: string;
 }
 

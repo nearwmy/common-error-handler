@@ -8,7 +8,7 @@ export interface Handlers {
     [index: string]: ErrorHandlerConfig;
 }
 export interface RequestError {
-    code: string;
+    code: string | number;
     message: string;
 }
 export interface ErrorHandlerInterface {

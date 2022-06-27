@@ -1,7 +1,7 @@
 import { RequestError } from '../types';
 class RestfulError extends Error {
   static type = 'restful';
-  code: string = ''
+  code: string|number
   message: string = ''
 
   constructor(obj: RequestError) {

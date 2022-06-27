@@ -1,7 +1,7 @@
 import { RequestError } from '../types';
 class EdamError extends Error {
   static type = 'edam';
-  code: string = ''
+  code: string|number;
   message: string = ''
 
   constructor(obj: RequestError) {

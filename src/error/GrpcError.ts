@@ -2,7 +2,7 @@ import { RequestError } from '../types';
 
 class GrpcError extends Error {
   static type = 'grpc';
-  code: string = ''
+  code: string|number
   message: string = ''
 
   constructor(obj: RequestError) {

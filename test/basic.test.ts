@@ -27,6 +27,10 @@ describe('errorHandlerIns register test', () => {
     expect(errorHandlerIns.getConfigHandlers()).toBeInstanceOf(Map)
   })
 
+  test('registerFinalHandler must be function', () => {
+    expect(() => errorHandlerIns.registerFinalHandler('1')).toThrowError()
+  })
+
 
   test('handler throw error', () => {
     const networkError = new RequestError.RestfulError({code: errorCodes.COMMON_CODES.NETWORK_ERROR, message: '网络错误，请稍后重试'})

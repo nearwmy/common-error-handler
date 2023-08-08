@@ -18,39 +18,44 @@
 
 1. 错误断言和错误处理
 2. 兜底错误处理
-2. requestError: GrpcError, EdamError, RestfulError 错误自定义类
-3. errorCodes: grpc， edam， restful 部分错误码（可以继续完善）
+2. requestError: `GrpcError`, `EdamError`, `RestfulError` 错误自定义类
+3. errorCodes: `grpc`， `edam`， `restful` 部分错误码（可以继续完善）
 
 
 ## API 
+```ts
+registerHandlers: 注册自定义的错误处理  
+registerFinalHandler: 注册兜底错误处理  
 
-  registerHandlers: 注册自定义的错误处理  
-  registerFinalHandler: 注册兜底错误处理  
-  unregisterHandlers: 注销错误处理  
-  unregisterFinalHandler: 注销兜底错误处理  
-  getConfigHandlers: 获取所有错误处理  
-  getFinalHandler: 获取兜底错误处理  
-  assert: 断言错误  
-  handler: 错误处理  
+unregisterHandlers: 注销错误处理  
+unregisterFinalHandler: 注销兜底错误处理  
+
+getConfigHandlers: 获取所有错误处理  
+getFinalHandler: 获取兜底错误处理  
+
+assert: 断言错误  
+handler: 错误处理  
+```
 
 ### 安装
 
+```
 yarn 
-
+```
 ### 本地
-
+```
 yarn dev
-
+```
 ### 测试
-
+```
 yarn test  
 yarn test:run  
 yarn test:ui
-
+```
 
 ### 代码示例
 
-```
+```ts
 import ErrorHandler from 'error-handler';
 const { COMMON_CODES, EDAM_CODES, GRPC_CODES } = errorCodes;
 const handlers = {
